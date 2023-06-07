@@ -6,6 +6,7 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class ExamResponseDTO {
+    private Long id;
     private String student;
     private String subject;
     private Integer term;

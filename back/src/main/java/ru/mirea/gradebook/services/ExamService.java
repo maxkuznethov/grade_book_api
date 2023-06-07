@@ -1,7 +1,5 @@
 package ru.mirea.gradebook.services;
 
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import ru.mirea.gradebook.dto.ExamRequestDTO;
 import ru.mirea.gradebook.dto.ExamResponseDTO;
@@ -13,7 +11,6 @@ import ru.mirea.gradebook.repositories.UserRepository;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @Service
 public class ExamService {
@@ -40,24 +37,29 @@ public class ExamService {
         return examRequestDTO;
     }
 
-    public ExamResponseDTO changeMark(Map<String, String> newMark, Long id) {
-        Exam exam = examRepository.getReferenceById(id);
-        exam.setMark(newMark.get("mark"));
-        examRepository.save(exam);
-        return new ExamResponseDTO(exam.getUser().getUsername(),
-                exam.getSubject().getName(),
-                exam.getSubject().getTerm(),
-                exam.getSubject().getHours(),
-                exam.getMark(),
-                exam.getTeacher().getName(),
-                exam.getDate());
+    public ExamResponseDTO changeMark(Exam exam) {
+        Exam examToUpdate = examRepository.getReferenceById(exam.getId());
+        if (exam.getMark() != null && !exam.getMark().equals("")) {
+            examToUpdate.setMark(exam.getMark());
+        }
+        examRepository.save(examToUpdate);
+        return new ExamResponseDTO(
+                examToUpdate.getId(),
+                examToUpdate.getUser().getUsername(),
+                examToUpdate.getSubject().getName(),
+                examToUpdate.getSubject().getTerm(),
+                examToUpdate.getSubject().getHours(),
+                examToUpdate.getMark(),
+                examToUpdate.getTeacher().getName(),
+                examToUpdate.getDate());
     }
 
-    public List<ExamResponseDTO> getExams(Long studentId) {
+    public List<ExamResponseDTO> getUserExams(Long studentId) {
         List<Exam> exams = userRepository.getReferenceById(studentId).getExams();
         List<ExamResponseDTO> examsResponse = new ArrayList<>();
         exams.forEach(exam -> {
             examsResponse.add(new ExamResponseDTO(
+                    exam.getId(),
                     exam.getUser().getUsername(),
                     exam.getSubject().getName(),
                     exam.getSubject().getTerm(),
@@ -69,6 +71,26 @@ public class ExamService {
         return examsResponse;
     }
 
+    public List<ExamResponseDTO> getExams() {
+        List<Exam> exams = examRepository.findAll();
+        List<ExamResponseDTO> examsResponse = new ArrayList<>();
+        exams.forEach(exam -> {
+            examsResponse.add(new ExamResponseDTO(
+                    exam.getId(),
+                    exam.getUser().getUsername(),
+                    exam.getSubject().getName(),
+                    exam.getSubject().getTerm(),
+                    exam.getSubject().getHours(),
+                    exam.getMark(),
+                    exam.getTeacher().getName(),
+                    exam.getDate()));
+        });
+        return examsResponse;
+    }
+
+    public void deleteExam(Long id) {
+        examRepository.deleteById(id);
+    }
     /*
     public List<ExamResponseDTO> getCurrentUserExams() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();

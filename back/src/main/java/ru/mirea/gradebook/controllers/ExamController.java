@@ -1,12 +1,14 @@
 package ru.mirea.gradebook.controllers;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import ru.mirea.gradebook.dto.ExamRequestDTO;
 import ru.mirea.gradebook.dto.ExamResponseDTO;
+import ru.mirea.gradebook.models.Exam;
+import ru.mirea.gradebook.models.Subject;
 import ru.mirea.gradebook.services.ExamService;
 
 import java.util.List;
-import java.util.Map;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -22,15 +24,28 @@ public class ExamController {
     public ExamRequestDTO addExam(@RequestBody ExamRequestDTO examRequestDTO) {
         return examService.addExam(examRequestDTO);
     }
-/*
-    @PutMapping("exam/changeMark/{id}")
-    public ExamResponseDTO changeMark(@RequestBody Map<String, String> mark, @PathVariable Long id) {
-        return examService.changeMark(mark, id);
+
+    @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public List<ExamResponseDTO> getAllExams() {
+        return examService.getExams();
     }
-*/
+
+
+    @PutMapping("edit")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ExamResponseDTO updateMark(@RequestBody Exam exam) {
+        return examService.changeMark(exam);
+    }
+
     @GetMapping("/get/{id}")
     public List<ExamResponseDTO> getUserExams(@PathVariable Long id) {
-        return examService.getExams(id);
+        return examService.getUserExams(id);
+    }
+
+    @DeleteMapping("delete/{id}")
+    public void deleteExam(@PathVariable Long id) {
+        examService.deleteExam(id);
     }
 /*
     @GetMapping("exam/get")
